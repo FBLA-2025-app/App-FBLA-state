@@ -940,115 +940,49 @@ export default function BattleScreen() {
   }
 
   const handleBattleWin = async () => {
-    stopBgMusic()
-    setBattleText(`You defeated ${enemyTrainer?.name}!`)
-    playSound("victory", 0.2)
-
+    stopBgMusic();
+    setBattleText(`You defeated ${enemyTrainer?.name}!`);
+    playSound("victory", 0.2);
     try {
-      // Get the most up-to-date game state
-      const gameState = await loadGameState()
-
-      // Use the team data from our ref instead of the React state
-      const finalTeam = JSON.parse(JSON.stringify(latestTeamRef.current))
-
-      console.log("Final team from ref before saving:", JSON.stringify(finalTeam))
-
-      // If this was a pre-trainer encounter, mark it as completed
-      if (isRandomBattle && isPreTrainerEncounter) {
-        await completeTrainerEncounter(trainerId)
-
-        // Just save the team and return to map
-        await saveGameState({
-          ...gameState,
-          playerTeam: finalTeam,
-        })
-
-        // End battle after a delay
-        setTimeout(() => {
-          setIsBattleOver(true)
-          setIsProcessingTurn(false)
-        }, 2000)
-
-        return
-      }
-
-      // Only add to defeatedTrainers if this is a trainer battle (not random encounter)
-      // and if this is the first time defeating this trainer
-      if (!isRandomBattle) {
-        const alreadyDefeated = gameState.defeatedTrainers.includes(trainerId)
-
-        if (!alreadyDefeated) {
-          await saveGameState({
-            ...gameState,
-            defeatedTrainers: [...gameState.defeatedTrainers, trainerId],
-            playerTeam: finalTeam,
-          })
-        } else {
-          // Just save the player team state
-          await saveGameState({
-            ...gameState,
-            playerTeam: finalTeam,
-          })
-        }
-      } else {
-        // For random encounters, just save the team
-        await saveGameState({
-          ...gameState,
-          playerTeam: finalTeam,
-        })
-      }
-
-      // Verify what was saved
-      const savedState = await loadGameState()
-      console.log("Verified saved team:", JSON.stringify(savedState.playerTeam))
-
-      setIsBattleOver(true)
-      setIsProcessingTurn(false)
-
-    } catch (error) {
-      console.error("Error saving battle win:", error)
-    }
-  }
-
-  // Make sure handleBattleLoss properly ends the battle
-  const handleBattleLoss = async () => {
-    console.log("Battle lost - ending battle")
-    setBattleText("You lost the battle...")
-    playSound("defeat", 0.2)
-
-    try {
-      // Save the team state with fainted monsters
+      setLoading(true); // Show loading icon
       const gameState = await loadGameState();
-
-      // Use the final team state from our latestTeamRef
       const finalTeam = JSON.parse(JSON.stringify(latestTeamRef.current));
-
-      console.log("Saving team after loss:", finalTeam);
-
-      // Save the updated game state
-      await saveGameState({
-        ...gameState,
-        playerTeam: finalTeam,
-      });
-
-      // Verify the save worked
-      const verifiedState = await loadGameState();
-      console.log("Verified team health after loss:",
-        verifiedState.playerTeam.map(m => `${m.name}: ${m.health}/${m.maxHealth}`)
+      await saveGameState(
+        {
+          ...gameState,
+          playerTeam: finalTeam,
+        },
+        userId, // Pass the userId
+        setLoading // Pass the loading state setter
       );
-
+      setIsBattleOver(true);
+      setIsProcessingTurn(false);
     } catch (error) {
-      console.error("Error saving team state after loss:", error);
+      console.error("Error saving battle win:", error);
     }
+  };
 
-    setIsBattleOver(true)
-    setIsProcessingTurn(false)
-
-    // Ensure we navigate back after a delay
-    // setTimeout(() => {
-    //   navigation.navigate("Map")
-    // }, 3000)
-  }
+  const handleBattleLoss = async () => {
+    setBattleText("You lost the battle...");
+    playSound("defeat", 0.2);
+    try {
+      setLoading(true); // Show loading icon
+      const gameState = await loadGameState();
+      const finalTeam = JSON.parse(JSON.stringify(latestTeamRef.current));
+      await saveGameState(
+        {
+          ...gameState,
+          playerTeam: finalTeam,
+        },
+        userId, // Pass the userId
+        setLoading // Pass the loading state setter
+      );
+      setIsBattleOver(true);
+      setIsProcessingTurn(false);
+    } catch (error) {
+      console.error("Error saving battle loss:", error);
+    }
+  };
 
   const calculateDamage = (attacker, defender, move) => {
     const base = move?.power || 20

@@ -96,4 +96,26 @@ app.post('/login', async (c) => {
 	}
 });
 
+app.post('/syncGameState', async (c) => {
+  const { DB } = c.env;
+  const { userId, gameState } = await c.req.json();
+
+  if (!DB) {
+    return c.text('Database not configured', 500);
+  }
+
+  if (!userId || !gameState) {
+    return c.text('User ID and game state are required', 400);
+  }
+
+  try {
+    const query = 'UPDATE users SET gameState = ? WHERE id = ?';
+    await DB.prepare(query).bind(JSON.stringify(gameState), userId).run();
+
+    return c.text('Game state synced successfully', 200);
+  } catch (error) {
+    return c.text(error.message, 500);
+  }
+});
+
 export default app

@@ -15,6 +15,7 @@ import { loadFonts } from "./utils/fonts";
 import { Audio } from "expo-av";
 import LoginScreen from "./screens/LoginScreen"
 import RegisterScreen from "./screens/RegisterScreen"
+// import { LoadingProvider, useLoading } from "./utils/loadingContext";
 
 // Enable layout animations for Android
 if (Platform.OS === "android") {
@@ -45,6 +46,9 @@ export default function App() {
   };
 
   useEffect(() => {
+
+    testSetupId();
+
     const loadAppFonts = async () => {
       await loadFonts();
       setFontsLoaded(true);
@@ -65,6 +69,10 @@ export default function App() {
       setIsLoading(false)
     }, 1000)
   }, []);
+
+  const testSetupId = async () => {
+    await AsyncStorage.setItem("userId", "1234");
+  }
 
   // Show loading screen while fonts and other resources are loading
   if (!fontsLoaded || isLoading) {

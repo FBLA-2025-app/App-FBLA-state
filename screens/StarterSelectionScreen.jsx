@@ -38,26 +38,26 @@ export default function StarterSelectionScreen() {
     }
 
     const handleConfirm = async () => {
-        if (!selectedStarter) return
-
+        if (!selectedStarter) return;
         try {
-            // Get current game state (should be empty or default)
-            const gameState = await loadGameState()
-
-            // Create a new game state with the selected starter
-            await saveGameState({
-                ...gameState,
-                playerTeam: [selectedStarter],
-                hasSelectedStarter: true,
-            })
-
+            setLoading(true); // Show loading icon
+            const gameState = await loadGameState();
+            await saveGameState(
+                {
+                    ...gameState,
+                    playerTeam: [selectedStarter],
+                    hasSelectedStarter: true,
+                },
+                userId, // Pass the userId
+                setLoading // Pass the loading state setter
+            );
             stopBgMusic();
             playSound("click", 0.3);
-            navigation.replace("Map")
+            navigation.replace("Map");
         } catch (error) {
-            console.error("Error saving starter selection:", error)
+            console.error("Error saving starter selection:", error);
         }
-    }
+    };
 
     // If there's an existing game state, don't render this screen
     if (hasExistingGameState) {

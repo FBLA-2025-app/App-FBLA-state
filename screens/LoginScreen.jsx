@@ -59,21 +59,22 @@ export default function LoginScreen() {
       Alert.alert("Error", "Please enter both email and password");
       return;
     }
-  
+
     Alert.alert("Debug", "Starting login request");
     setIsLoading(true);
-  
+
     const url = `https://api.santiagohe75.workers.dev/login?username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
     Alert.alert("Debug", `Request URL: ${url}`);
-  
+
     try {
       const response = await fetch(url, {
         method: "POST",
       });
-  
+
       Alert.alert("Debug", `Response status: ${response.status}`);
-  
+
       if (response.ok) {
+        await AsyncStorage.setItem("userId", userId);
         const message = await response.text();
         Alert.alert("Success", message);
         navigation.replace("Home");
@@ -88,7 +89,7 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   };
-  
+
   const handleRegister = () => {
     navigation.navigate("Register")
   }
@@ -98,8 +99,8 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === "ios" ? "padding" : "height"} 
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
       {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss}> */}
@@ -107,9 +108,9 @@ export default function LoginScreen() {
         <View style={orientation === "landscape" ? styles.landscapeInner : styles.portraitInner}>
           {/* Logo Section */}
           <View style={orientation === "landscape" ? styles.landscapeLogoContainer : styles.portraitLogoContainer}>
-            <Image 
-              source={require("../assets/edumon-logo-education.png")} 
-              style={orientation === "landscape" ? styles.landscapeLogo : styles.portraitLogo} 
+            <Image
+              source={require("../assets/edumon-logo-education.png")}
+              style={orientation === "landscape" ? styles.landscapeLogo : styles.portraitLogo}
             />
           </View>
 
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 400,
   },
-  
+
   // Landscape mode styles
   landscapeScroll: {
     flexGrow: 1,
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     flex: 1,
     maxWidth: 500,
   },
-  
+
   // Common styles
   input: {
     backgroundColor: "white",
