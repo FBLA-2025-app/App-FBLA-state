@@ -32,7 +32,7 @@ export default function MapScreen() {
       // When map screen comes into focus, stop any existing music and play map music
       const setupMapAudio = async () => {
         await stopBgMusic(); // Ensure all music is stopped first
-        await playBgMusic("map", 0.1); // Play map music
+        await playBgMusic("map", 0.3); // Play map music
       };
       
       setupMapAudio();

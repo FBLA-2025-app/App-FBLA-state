@@ -966,7 +966,8 @@ const handleBattleWin = async () => {
 
   const handleBattleLoss = async () => {
     setBattleText("You lost the battle...");
-    playSound("defeat", 0.2);
+    stopBgMusic();
+    playSound("defeat", 0.3);
     try {
       const gameState = await loadGameState();
       const finalTeam = JSON.parse(JSON.stringify(latestTeamRef.current));
