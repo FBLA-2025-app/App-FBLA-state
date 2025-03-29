@@ -18,7 +18,7 @@ export default function HomeScreen() {
     }
 
     checkStarterSelection()
-    playBgMusic("home", 0.1);
+    playBgMusic("home", 0.3);
   }, [])
 
   const handlePlay = () => {

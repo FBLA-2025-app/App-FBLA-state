@@ -15,26 +15,10 @@ export default function SettingsScreen() {
     subject: "math",
   })
   const [showResetModal, setShowResetModal] = useState(false)
-  const [isLoading, setIsLoading] = useState(false);
-  const [userId, setUserId] = useState(null); // Add state for userId
 
   useEffect(() => {
     loadSettings()
-    fetchUserId();
   }, [])
-
-  const fetchUserId = async () => {
-    try {
-      const storedUserId = await AsyncStorage.getItem("userId"); 
-      if (storedUserId) {
-        setUserId(storedUserId);
-      } else {
-        console.error("User ID not found in AsyncStorage");
-      }
-    } catch (error) {
-      console.error("Error fetching user ID:", error);
-    }
-  };
 
   const loadSettings = async () => {
     try {
@@ -78,25 +62,18 @@ export default function SettingsScreen() {
   };
 
   const handleResetProgress = async () => {
-    if (!userId) {
-      console.error("User ID is not defined");
-      return;
-    }
-
     try {
-      setIsLoading(true); // Show loading indicator
-      await resetGameState(userId); // Pass the userId to resetGameState
-      setShowResetModal(false);
+      await resetGameState()
+      setShowResetModal(false)
+      // navigation.navigate("Home")
       navigation.reset({
         index: 0,
-        routes: [{ name: "Home" }],
-      });
+        routes: [{ name: 'Home' }],
+      })
     } catch (error) {
-      console.error("Error resetting game state:", error);
-    } finally {
-      setIsLoading(false); // Hide loading indicator
+      console.error("Error resetting game state:", error)
     }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>

@@ -91,24 +91,24 @@ export default function BattleScreen() {
         // Select battle music based on trainer position in the school
         if (isRandomBattle) {
           // For random encounters, use battle1
-          await playBgMusic("battle1", 0.1);
+          await playBgMusic("battle1", 0.3);
         } else {
           // For trainer battles, select music based on trainer position
           const school = SCHOOLS.find((s) => s.id === schoolId);
           if (school) {
             const trainerIndex = school.trainers.findIndex((t) => t.id === trainerId);
             if (trainerIndex === 0) {
-              await playBgMusic("battle1", 0.1);
+              await playBgMusic("battle1", 0.3);
             } else if (trainerIndex === 1) {
-              await playBgMusic("battle2", 0.1);
+              await playBgMusic("battle2", 0.3);
             } else if (trainerIndex === 2) {
-              await playBgMusic("battle3", 0.1);
+              await playBgMusic("battle3", 0.3);
             } else {
-              await playBgMusic("battle1", 0.1);
+              await playBgMusic("battle1", 0.3);
             }
           } else {
             // Default if school not found
-            await playBgMusic("battle1", 0.1);
+            await playBgMusic("battle1", 0.3);
           }
         }
       };
@@ -939,34 +939,35 @@ export default function BattleScreen() {
     }
   }
 
-  const handleBattleWin = async () => {
-    stopBgMusic();
-    setBattleText(`You defeated ${enemyTrainer?.name}!`);
-    playSound("victory", 0.2);
-    try {
-      setLoading(true); // Show loading icon
-      const gameState = await loadGameState();
-      const finalTeam = JSON.parse(JSON.stringify(latestTeamRef.current));
-      await saveGameState(
-        {
-          ...gameState,
-          playerTeam: finalTeam,
-        },
-        userId, // Pass the userId
-        setLoading // Pass the loading state setter
-      );
-      setIsBattleOver(true);
-      setIsProcessingTurn(false);
-    } catch (error) {
-      console.error("Error saving battle win:", error);
-    }
-  };
+const handleBattleWin = async () => {
+  stopBgMusic();
+  setBattleText(`You defeated ${enemyTrainer?.name}!`);
+  playSound("victory", 0.2);
+
+  try {
+    const gameState = await loadGameState();
+
+    // Add the defeated trainer to the gameState
+    const updatedDefeatedTrainers = [...(gameState.defeatedTrainers || []), trainerId];
+
+    await saveGameState(
+      {
+        ...gameState,
+        defeatedTrainers: updatedDefeatedTrainers,
+      },
+    );
+
+    setIsBattleOver(true);
+    setIsProcessingTurn(false);
+  } catch (error) {
+    console.error("Error saving battle win:", error);
+  }
+};
 
   const handleBattleLoss = async () => {
     setBattleText("You lost the battle...");
     playSound("defeat", 0.2);
     try {
-      setLoading(true); // Show loading icon
       const gameState = await loadGameState();
       const finalTeam = JSON.parse(JSON.stringify(latestTeamRef.current));
       await saveGameState(
@@ -974,8 +975,6 @@ export default function BattleScreen() {
           ...gameState,
           playerTeam: finalTeam,
         },
-        userId, // Pass the userId
-        setLoading // Pass the loading state setter
       );
       setIsBattleOver(true);
       setIsProcessingTurn(false);

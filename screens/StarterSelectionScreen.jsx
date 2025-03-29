@@ -40,7 +40,6 @@ export default function StarterSelectionScreen() {
     const handleConfirm = async () => {
         if (!selectedStarter) return;
         try {
-            setLoading(true); // Show loading icon
             const gameState = await loadGameState();
             await saveGameState(
                 {
@@ -48,8 +47,6 @@ export default function StarterSelectionScreen() {
                     playerTeam: [selectedStarter],
                     hasSelectedStarter: true,
                 },
-                userId, // Pass the userId
-                setLoading // Pass the loading state setter
             );
             stopBgMusic();
             playSound("click", 0.3);

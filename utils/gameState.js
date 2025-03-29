@@ -1,10 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { createMonster } from "../data/monsters"
-import { useLoading } from "./loadingContent";
 
 const GAME_STATE_KEY = "edumon_game_state"
-// const API_URL = "https://your-cloudflare-server-url.com";
-const API_URL = "https://api.santiagohe75.workers.dev/syncGameState"
 
 // Get initial game state with starter monster
 export const getInitialGameState = () => {
@@ -17,7 +14,7 @@ export const getInitialGameState = () => {
       soundEnabled: true,
       musicEnabled: true,
       difficulty: "normal",
-      subject: "math",
+      subject: "math", 
     },
     progression: {
       questionsAnswered: {
@@ -101,32 +98,27 @@ export const loadGameState = async () => {
 }
 
 // Save game state to AsyncStorage
-export const saveGameState = async (newState, userId, setLoading) => {
+export const saveGameState = async (newState) => {
   try {
-    setLoading(true); // Show loading icon
-    const currentState = await loadGameState();
+    // Merge with existing state to avoid overwriting unspecified properties
+    const currentState = await loadGameState()
     const mergedState = {
       ...currentState,
       ...newState,
+      // Special handling for nested objects
       settings: {
         ...currentState.settings,
         ...(newState.settings || {}),
       },
-    };
+    }
 
-    await AsyncStorage.setItem(GAME_STATE_KEY, JSON.stringify(mergedState));
-
-    // Sync to server
-    await syncGameStateToServer(mergedState, userId);
-
-    return mergedState;
+    await AsyncStorage.setItem(GAME_STATE_KEY, JSON.stringify(mergedState))
+    return mergedState
   } catch (error) {
-    console.error("Error saving game state:", error);
-    throw error;
-  } finally {
-    setLoading(false); // Hide loading icon
+    console.error("Error saving game state:", error)
+    throw error
   }
-};
+}
 
 // Calculate experience needed for next level
 export const calculateExpToNextLevel = (level) => {
@@ -139,24 +131,16 @@ export const calculateHealth = (baseHealth, level) => {
   return Math.floor(baseHealth * (1 + (level - 1) * 0.1))
 }
 
-export const resetGameState = async (userId) => {
-  const { setIsLoading } = useLoading(); // Use the global loading context
-
+// Reset game state (for debugging or starting over)
+export const resetGameState = async () => {
   try {
-    setIsLoading(true); // Show loading icon
-    await AsyncStorage.setItem(GAME_STATE_KEY, JSON.stringify(DEFAULT_GAME_STATE));
-
-    // Sync reset state to server
-    await syncGameStateToServer(DEFAULT_GAME_STATE, userId);
-
-    return DEFAULT_GAME_STATE;
+    await AsyncStorage.setItem(GAME_STATE_KEY, JSON.stringify(DEFAULT_GAME_STATE))
+    return DEFAULT_GAME_STATE
   } catch (error) {
-    console.error("Error resetting game state:", error);
-    throw error;
-  } finally {
-    setIsLoading(false); // Hide loading icon
+    console.error("Error resetting game state:", error)
+    throw error
   }
-};
+}
 
 // Heal all monsters in the player's team
 export const healTeam = async () => {
@@ -262,24 +246,3 @@ export const hasSelectedStarter = async () => {
   }
 }
 
-
-// Sync game state to the server
-export const syncGameStateToServer = async (gameState, userId) => {
-  try {
-    const response = await fetch(`${API_URL}/syncGameState`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId, gameState }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to sync game state to server");
-    }
-
-    console.log("Game state synced to server successfully");
-  } catch (error) {
-    console.error("Error syncing game state to server:", error);
-  }
-};
